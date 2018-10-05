@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -27,7 +28,12 @@ import com.google.firebase.ml.vision.text.FirebaseVisionText.TextBlock;
 import com.google.firebase.ml.vision.text.RecognizedLanguage;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -71,10 +77,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.select_image:
-                Intent in = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (in.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(in, select_photo);
-                }
+                Intent in = new Intent();
+                in.setType("image/*");
+                in.setAction(Intent.ACTION_GET_CONTENT);
+//                if (in.resolveActivity(getPackageManager()) != null) {
+                    startActivityForResult(Intent.createChooser(in,"SELECT IMAGE TO CONTINUE"), select_photo);
+//                }
 
                 break;
 
@@ -93,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 @Override
                                 public void onSuccess(FirebaseVisionText result) {
 
-                                    Log.d("Image Data",result.getText().toString()+" ");
+                                  //  Log.d("Image Data",result.getText().toString()+" ");
 
                                     String resultText = result.getText();
                                     textView.setText(resultText);
@@ -102,13 +110,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         Float bloxckConfidence = block.getConfidence();
                                         //String txt = textView.getText().toString()+"\n";
                                         //txt = txt + blockText.toString();
-                                        //textView.setText(txt);
+
                                         Log.d("Block Text",blockText+" ");
                                         List<RecognizedLanguage> blockLanguages = block.getRecognizedLanguages();
                                         Point[] blockCornerPoints = block.getCornerPoints();
                                         Rect blockFrame = block.getBoundingBox();
                                         for (FirebaseVisionText.Line line: block.getLines()) {
                                             String lineText = line.getText();
+
+
                                             Float lineConfidence = line.getConfidence();
                                             List<RecognizedLanguage> lineLanguages = line.getRecognizedLanguages();
                                             Point[] lineCornerPoints = line.getCornerPoints();
@@ -153,20 +163,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case select_photo:
                 if (resultcode == RESULT_OK) {
 
-                    Bitmap bitmap = (Bitmap) imagereturnintent.getExtras().get("data");
-                    bmp=bitmap;
+//                    Bitmap bitmap = (Bitmap) imagereturnintent.getExtras().get("data");
+//                    bmp=bitmap;
 
-                    if (bitmap != null) {
+//                    if (bitmap != null) {
                         //imageView.setImageBitmap(bitmap);// Set image over
                         // bitmap
-                    } else {
-                        Toast.makeText(MainActivity.this,
-                                "Error while decoding image.",
-                                Toast.LENGTH_SHORT).show();
-                    }
+//                    } else {
+//                        Toast.makeText(MainActivity.this,
+//                                "Error while decoding image.",
+//                                Toast.LENGTH_SHORT).show();
+//                    }
 
-                    String path = MediaStore.Images.Media.insertImage(MainActivity.this.getContentResolver(), bitmap, "Title", null);
-                    imageUri = Uri.parse(path);
+                    Uri imageUri = imagereturnintent.getData();
+
+
+                    //String path = MediaStore.Images.Media.insertImage(MainActivity.this.getContentResolver(), bitmap, "Title", null);
+                    //imageUri = Uri.parse(path);
 
                     CropImage
                             .activity(imageUri)
